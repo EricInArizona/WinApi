@@ -1,5 +1,5 @@
 // Copyright Eric Chauvin 2022
-// This copyright notice has to stay at the top.
+
 
 
 // This is licensed under the GNU General
@@ -36,9 +36,7 @@ class X11Main
 
   static bool init( FileIO& mainIO );
   static void closeConnect( void );
-  static void test( FileIO& mainIO );
-  static Uint64 createSimpleWindow( const Uint64 parent,
-                             const Int32 x,
+  static Uint64 createSimpleWindow( const Int32 x,
                              const Int32 y,
                              const Int32 width,
                              const Int32 height,
@@ -46,6 +44,8 @@ class X11Main
 
   static void destroyWindow( const Uint64 window );
   static Int32 checkWindowEvent( Uint64 window );
-
+  static void createGraphicsContext( Uint64 window );
+  static Int32 getDisplayWidth( void );
+  static Int32 getDisplayHeight( void );
 
   };

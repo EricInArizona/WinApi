@@ -1,5 +1,4 @@
 // Copyright Eric Chauvin 2022
-// This copyright notice has to stay at the top.
 
 
 // This is licensed under the GNU General
@@ -55,7 +54,7 @@ typedef int (*XErrorHandler) (
 
 */
 
-  } // extern "C" 
+  } // extern "C"
 
 
 
@@ -72,7 +71,7 @@ static Display *display;
 static Int32 screen;
 static Uint64 colorBlack;
 static Uint64 colorWhite;
-
+static GC gc; // Graphics context.
 
 
 
@@ -108,14 +107,28 @@ screen = DefaultScreen( display );
 colorBlack = XBlackPixel( display, screen );
 colorWhite = XWhitePixel( display, screen );
 
+
 return true;
 }
 
 
 
+Int32 X11Main::getDisplayWidth( void )
+{
+return DisplayWidth( display, screen );
+}
 
-Uint64 X11Main::createSimpleWindow( const Uint64 parent,
-                                    const Int32 x,
+
+
+Int32 X11Main::getDisplayHeight( void )
+{
+return DisplayHeight( display, screen );
+}
+
+
+
+
+Uint64 X11Main::createSimpleWindow( const Int32 x,
                                     const Int32 y,
                                     const Int32 width,
                                     const Int32 height,
@@ -142,27 +155,13 @@ if( borderW < 0 )
 // is inside the border at the upper-left corner.
 
 
-
-// Window XCreateSimpleWindow( Display *display,
-                            // Window parent,
-                            // int x,
-                            // int y,
-                            // unsigned int width,
-                            // unsigned int height,
-                            // unsigned int border_width,
-                            // unsigned long border,
-                            // unsigned long background );
-
-
-// GC gc; Graphics context.
-
-
 // Window window;
 
 // Coordinates and sizes like width and height are
 // truncated to 16 bits.
 Uint64 window = XCreateSimpleWindow( display,
-                   parent, // RootWindow( display, screen ),
+                  DefaultRootWindow( display ),
+                  // RootWindow( display, screen ),
                    x, y,
                    Casting::i32ToU32( width ),
                    Casting::i32ToU32( height ),
@@ -297,15 +296,15 @@ if( event.type == KeyPress )
 if( event.type == Expose )
   return X11Main::EventExpose;
 
- 
+
 
 // What was the event?
 return X11Main::EventNothing;
 }
 
 
-======
-/* 
+
+/*
 void X11fillRectangle( const Uint64 win )
 {
 Read about graphics context.
@@ -316,10 +315,30 @@ I need the graphics context for this window.
                       DefaultGC( display, screen ),
                       RECT_X, RECT_Y,
                       RECT_WIDTH, RECT_HEIGHT );
-}
-
 
 */
+
+
+
+
+// https://arcturus.su/~alvin/docs/xlpm/ch05.html
+
+
+void X11Main::createGraphicsContext( Uint64 window )
+{
+XGCValues values;
+Uint64 valuemask = 0;
+
+// values.foreground = WhitePixel( display, screen );
+// values.background = BlackPixel( display, screen );
+
+// There is only one current graphics context.
+gc = XCreateGC( display, window, valuemask, &values );
+
+XSetForeground( display, gc, colorWhite );
+XSetBackground( display, gc, colorBlack );
+}
+
 
 
 
@@ -347,58 +366,3 @@ if( display != nullptr )
 
 
 
-void X11Main::test( FileIO& mainIO )
-{
-mainIO.appendChars( "X11 test().\n" );
-
-if( !init( mainIO ))
-  return;
-
-mainIO.appendChars( "init() is OK.\n" );
-
-// A window manager can override your choice of size,
-// border width, and position for a top-level window.
-// Your program must be prepared to use the actual size
-// and position of the top window.
-
-Int32 dWidth = DisplayWidth( display, screen );
-Int32 dHeight = DisplayHeight( display, screen );
-
-
-// In millimeters:
-// DisplayWidthMM(dpy, scr)
-// DisplayHeightMM(dpy, scr)
-
-mainIO.appendChars( "dWidth: " );
-Str showW( dWidth );
-mainIO.appendStr( showW );
-mainIO.appendChars( "\n" );
-
-if( dWidth < 800 )
-  dWidth = 800;
-
-if( dHeight < 600 )
-  dHeight = 600;
-
-
-Uint64 newWin = createSimpleWindow(
-                      DefaultRootWindow( display ),
-                      1,
-                      1,
-                      // minus two borders - 2
-                      dWidth - (2 * 5) - 2,
-                      // If dHeight is too big then it will
-                      // push the taskbar down so it is
-                      // hidden or partially pushed down.
-                      dHeight - 110,
-                      5 );
-
-
-Threads::sleep( 5000 );
-
-destroyWindow( newWin );
-
-closeConnect();
-
-mainIO.appendChars( "After close.\n" );
-}
