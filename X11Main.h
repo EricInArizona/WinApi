@@ -18,10 +18,15 @@
 // Xlib - C Language X Interface
 // www.x.org/releases/X11R7.7/doc/libX11/libX11/libX11.html
 
+// And also:
+// https://arcturus.su/~alvin/docs/xlpm/ch05.html
 
 
 #include "../LinuxApi/BasicTypes.h"
 #include "../LinuxApi/FileIO.h"
+
+// These are safe-to-use static constants.
+#include "X11Const.h"
 
 
 
@@ -30,10 +35,6 @@ class X11Main
   private:
 
   public:
-  static const Int32 EventNothing = 0;
-  static const Int32 EventKeyPress = 2;
-  static const Int32 EventExpose = 3;
-
   static bool init( FileIO& mainIO );
   static void closeConnect( void );
   static Uint64 createSimpleWindow( const Int32 x,
@@ -47,5 +48,9 @@ class X11Main
   static void createGraphicsContext( Uint64 window );
   static Int32 getDisplayWidth( void );
   static Int32 getDisplayHeight( void );
+  static char getKeyChar( void );
+  static void drawRectangle( Uint64 window,
+                             Int32 x, Int32 y,
+                             Int32 width, Int32 height );
 
   };

@@ -1,6 +1,7 @@
 // Copyright Eric Chauvin 2022
 
 
+
 // This is licensed under the GNU General
 // Public License (GPL).  It is the
 // same license that Linux has.
@@ -67,11 +68,15 @@ typedef int (*XErrorHandler) (
 // to being extern.
 
 // There is only one of these variables for all windows.
-static Display *display;
+static Display *display = nullptr;
 static Int32 screen;
 static Uint64 colorBlack;
 static Uint64 colorWhite;
-static GC gc; // Graphics context.
+static GC gc = nullptr; // Graphics context.
+static char keyBuf[256];
+static Uint64 keySymbol;
+
+
 
 
 
@@ -221,6 +226,13 @@ OwnerGrabButtonMask
 */
 
 
+// There is only one graphics context for now.
+createGraphicsContext( window );
+
+
+// XClearWindow( display, window );
+// XMapRaised( display, window );
+
 
 // Show it.
 XMapWindow( display, window );
@@ -246,7 +258,7 @@ if( !XCheckWindowEvent( display, window, ExposureMask |
                                          ButtonPressMask,
                                       // KeymapStateMask
                                          &event ))
-  return X11Main::EventNothing;
+  return X11Const::EventNothing;
 
 /*
 KeyPress  2
@@ -287,37 +299,59 @@ GenericEvent  35
 */
 
 
-// if( KeyPress != X11Main::EventKeyPress )
+// if( KeyPress != X11Const::EventKeyPress )
   // It doesn't matter if they are the same or not.
 
 if( event.type == KeyPress )
-  return X11Main::EventKeyPress;
+  {
+  XLookupString( &event.xkey, keyBuf, 254, &keySymbol,
+                                           nullptr );
+  return X11Const::EventKeyPress;
+  }
+
 
 if( event.type == Expose )
-  return X11Main::EventExpose;
+  return X11Const::EventExpose;
+
+if( event.type == ButtonPress )
+  return X11Const::EventButtonPress;
 
 
 
 // What was the event?
-return X11Main::EventNothing;
+return X11Const::EventNothing;
 }
 
 
 
-/*
-void X11fillRectangle( const Uint64 win )
+char X11Main::getKeyChar( void )
 {
-Read about graphics context.
+return keyBuf[0];
+}
 
-I need the graphics context for this window.
 
-      XFillRectangle( display, window,
-                      DefaultGC( display, screen ),
-                      RECT_X, RECT_Y,
-                      RECT_WIDTH, RECT_HEIGHT );
 
+
+void X11Main::drawRectangle( Uint64 window,
+                             Int32 x, Int32 y,
+                             Int32 width, Int32 height )
+{
+XDrawRectangle( display, window, gc, x, y,
+                           Casting::i32ToU32( width ),
+                           Casting::i32ToU32( height ));
+}
+
+
+
+
+
+/*
+
+XDrawLine(dis,win,gc, x1,y1, x2,y2);
+XDrawArc(dis,win,gc,x,y, width, height, arc_start, arc_stop);
+XFillArc(dis,win, gc, x, y, width, height, arc_start, arc_stop);
+XFillRectangle(dis,win,gc, x, y, width, height);
 */
-
 
 
 
@@ -328,9 +362,6 @@ void X11Main::createGraphicsContext( Uint64 window )
 {
 XGCValues values;
 Uint64 valuemask = 0;
-
-// values.foreground = WhitePixel( display, screen );
-// values.background = BlackPixel( display, screen );
 
 // There is only one current graphics context.
 gc = XCreateGC( display, window, valuemask, &values );
@@ -356,6 +387,9 @@ XDestroyWindow( display, window );
 
 void X11Main::closeConnect( void )
 {
+if( gc != nullptr )
+  XFreeGC( display, gc );
+
 if( display != nullptr )
   {
   // This frees any resources you haven't already freed.
@@ -363,6 +397,3 @@ if( display != nullptr )
   display = nullptr;
   }
 }
-
-
-
