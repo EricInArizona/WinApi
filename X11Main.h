@@ -53,4 +53,11 @@ class X11Main
                              Int32 x, Int32 y,
                              Int32 width, Int32 height );
 
+  static void setFont( void );
+  static void listFonts( FileIO& mainIO );
+  static Uint64 loadFont( const char* fontName );
+  static void drawString( Uint64 window, Int32 x, Int32 y,
+                          const char* pStr );
+
+
   };

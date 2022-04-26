@@ -9,6 +9,19 @@
 
 
 
+// Use OpenGL.
+// #include <gl/gl.h>
+// #include<GL/glx.h>
+// #include<GL/glu.h>
+
+// https://en.wikipedia.org/wiki/GLX
+
+// https://www.khronos.org/opengl/wiki/
+//              Programming_OpenGL_in_Linux:_GLX_and_Xlib
+// the GLX extension to the X windows system.
+
+
+
 #include "X11Main.h"
 #include "../LinuxApi/Casting.h"
 #include "../LinuxApi/Threads.h"
@@ -396,4 +409,84 @@ if( display != nullptr )
   XCloseDisplay( display );
   display = nullptr;
   }
+}
+
+
+
+void X11Main::setFont( void )
+{
+Uint64 font = 0; // Temporary fake number.
+
+XSetFont( display, gc, font );
+}
+
+
+
+
+
+void X11Main::listFonts( FileIO& mainIO )
+{
+// #include <gl/gl.h>
+
+Int32 numFonts;
+char** fontList;
+
+//  fontlist = XListFonts (dpy, "*helv*", 1000, &num_fonts);
+fontList = XListFonts( display, "*", 5000, &numFonts );
+
+
+// Name is: -misc-fixed-medium-r-semicondensed--13-100-100-
+//                    100-c-60-iso8859-1
+// Name is: -misc-fixed-medium-r-semicondensed--13-120-75-75-
+//                 c-60-iso8859-1
+
+// Name is: 6x13
+// Name is: cursor
+// Name is: fixed
+// Name is: -misc-fixed-medium-r-semicondensed--0-0-75-75-
+// c-0-iso8859-1
+
+
+mainIO.appendChars( "\n\nFonts:\n\n" );
+
+for( Int32 count = 0; count < numFonts; count++ )
+  {
+  mainIO.appendChars( "Name is: " );
+  mainIO.appendChars( fontList[count] );
+  mainIO.appendChars( "\n" );
+  }
+
+XFreeFontNames( fontList );
+}
+
+
+
+// XLoadQueryFont()
+
+
+Uint64 X11Main::loadFont( const char* fontName )
+{
+return XLoadFont( display, fontName );
+}
+
+
+
+
+void X11Main::drawString( Uint64 window, Int32 x, Int32 y,
+                          const char* pStr )
+{
+const char* sizePoint = pStr;
+Int32 strSize = 0;
+for( Int32 count = 0; count < 1000; count++ )
+  {
+  char c = *sizePoint;
+  if( c == 0 )
+    break;
+
+  sizePoint++;
+  strSize++;
+  }
+
+
+XDrawString( display, window, gc, x, y, pStr, strSize );
 }
