@@ -30,5 +30,6 @@ class Signals
   static void setupControlCSignal( void );
   static void setupIllegalOpSignal( void );
   static void setupBadMemSignal( void );
+  static bool getControlCSignal( void );
 
   };

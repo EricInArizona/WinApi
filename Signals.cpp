@@ -30,15 +30,16 @@
 extern "C" {
 
 // Declare it extern, then define it.
-// extern volatile sig_atomic_t gotSigFpe;
-// volatile sig_atomic_t gotSigFpe;
+extern volatile sig_atomic_t gotSigCtrlC;
+volatile sig_atomic_t gotSigCtrlC = 0;
 
 
 
 // Erroneous arithmetic operation.
-// SIGFPE is the floating point error signal.  It is
-// also used for integer errors, like with an integer
-// overflow.  The default signal handler for that is to
+// SIGFPE is the floating point error signal.
+// It is also used for integer errors, like
+// with an integer overflow.  The default
+// signal handler for that is to
 // just close the program.
 
 
@@ -58,7 +59,8 @@ void catchFpeSignal( Int32 sigNum )
 // because of this signal.
 
 
-sigNum++; // Pretend to use this for the compiler warnings.
+sigNum++; // Pretend to use this for the
+          // compiler warnings.
 if( sigNum < 1000000000 )
   throw "Floating point error signal.";
 
@@ -71,11 +73,12 @@ void catchControlCSignal( Int32 sigNum );
 
 void catchControlCSignal( Int32 sigNum )
 {
-// gotSigControlC++;
+gotSigCtrlC++;
 
 sigNum++;
-if( sigNum < 1000000000 )
-  throw "Got Control C signal.";
+if( sigNum == 1000000000 )
+  throw "This is not going to happen.";
+
 }
 
 
@@ -92,7 +95,6 @@ if( sigNum < 1000000000 )
 
 
 void catchBadMemSignal( Int32 sigNum );
-
 
 void catchBadMemSignal( Int32 sigNum )
 {
@@ -203,11 +205,6 @@ You will never see macro definitions coming from my
 header files.  This is like the poster child for why
 you should never use macro definitions.
 
-This is only written for Linux, so I'm not worried
-about it being portable.  I will use signal().  It works.
-Maybe they'll fix this.  It is March 22, 2022 when this
-is being written.
-
 struct sigaction sa;
 
 sa.sa_handler = catchFpeSignal;
@@ -222,10 +219,18 @@ if( sigaction( SIGFPE, &sa, NULL ) == -1 )
 }
 
 
+bool Signals::getControlCSignal( void )
+{
+if( gotSigCtrlC > 0 )
+  return true;
+
+return false;
+}
+
 
 void Signals::setupControlCSignal( void )
 {
-// gotSigControlC = 0;
+gotSigCtrlC = 0;
 
 if( SIG_ERR == signal( SIGINT, catchControlCSignal ))
   throw "Error setting the Control C signal handler.";
