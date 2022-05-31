@@ -30,8 +30,9 @@
 extern "C" {
 
 // Declare it extern, then define it.
-extern volatile sig_atomic_t gotSigCtrlC;
-volatile sig_atomic_t gotSigCtrlC = 0;
+// extern volatile sig_atomic_t gotSigCtrlC;
+// volatile sig_atomic_t gotSigCtrlC = 0;
+static volatile sig_atomic_t gotSigCtrlC = 0;
 
 
 
