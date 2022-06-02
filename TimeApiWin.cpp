@@ -106,19 +106,21 @@ Str secS( seconds );
 Str minS( minutes );
 Str hourS( hour );
 
+Str result( "" );
+
 // Close enough for now.
-cBuf.appendStr( hourS );
-cBuf.appendStr( colon );
-if( minS.getSize() < 2 )
-  cBuf.appendStr( zero );
+result.append( hourS );
+result.append( colon );
+if( minS.getLast() < 2 )
+  result.append( zero );
 
-cBuf.appendStr( minS );
-cBuf.appendStr( colon );
+result.append( minS );
+result.append( colon );
 
-if( secS.getSize() < 2 )
-  cBuf.appendStr( zero );
+if( secS.getLast() < 2 )
+  result.append( zero );
 
-cBuf.appendStr( secS );
+result.append( secS );
 
-return cBuf.getStr();
+return result;
 }
