@@ -39,8 +39,9 @@ class TimeApi
   void setNow( void );
   Int64 diffSec( TimeApi& in );
   Str timeStr( void );
-  inline Int64 getSeconds( void )
-    {
-    return timeSeconds;
-    }
+
+  static Int64 getSecondsNow( void );
+
+  // Int64 getMilliSec( void );
+
   };

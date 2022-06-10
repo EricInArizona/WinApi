@@ -10,13 +10,44 @@
 #include "TimeApiWin.h"
 // #include "TimeApiLinux.h"
 #include "../CppBase/CharBuf.h"
+
+
 // #include <chrono>
+
 #include <time.h>
+// #include <sysinfoapi.h>
+
 
 
 TimeApi::TimeApi( void )
 {
 setNow();
+}
+
+
+
+/*
+Int64 TimeApi::getMilliSec( void )
+{
+// timespec spec;
+// Int64 what = clock_gettime( CLOCK_REALTIME,
+//                             &spec );
+
+// #include <sysinfoapi.h>
+Int64 milli = GetTickCount();
+return milli;
+}
+*/
+
+
+Int64 TimeApi::getSecondsNow( void )
+{
+__time64_t long_time;
+
+// Get time as 64-bit integer.
+_time64( &long_time );
+
+return long_time;
 }
 
 
